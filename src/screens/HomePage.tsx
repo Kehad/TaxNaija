@@ -149,7 +149,7 @@ const HomePage: React.FC = () => {
     } else {
       // Company Tax Calculation (current as of Dec 2025)
       const turnover = parseCurrency(formData.turnover);
-      const fixedAssets = parseCurrency(formData.fixedAssets); // Not directly used but kept for form
+      // const fixedAssets = parseCurrency(formData.fixedAssets); // Not directly used but kept for form
       const profits = parseCurrency(formData.profits);
       const capGains = parseCurrency(formData.capitalGains);
 
