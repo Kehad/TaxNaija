@@ -37,11 +37,11 @@ const HomePage: React.FC = () => {
 
   // Form State (updated defaults for better testing with current rates)
   const [formData, setFormData] = useState({
-    annualIncome: "5,000,000.00",
-    capitalGains: "500,000.00",
-    turnover: "150,000,000.00",
-    fixedAssets: "200,000,000.00",
-    profits: "20,000,000.00",
+    annualIncome: "",
+    capitalGains: "",
+    turnover: "",
+    fixedAssets: "",
+    profits: "",
   });
 
   // Result State

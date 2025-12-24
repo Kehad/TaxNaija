@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'My React PWA',
-        short_name: 'ReactPWA',
-        description: 'A React PWA with Tailwind CSS',
+        name: 'TaxNaija - Your Nigerian Tax Calculator',
+        short_name: 'TaxNaija',
+        description: 'Calculate your taxes in Nigeria with ease.',
         theme_color: '#ffffff',
         icons: [
           {
