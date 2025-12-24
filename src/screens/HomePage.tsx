@@ -97,13 +97,12 @@ const HomePage: React.FC = () => {
 
       // Current PAYE bands (as of Dec 2025)
       const bands: TaxBand[] = [
-        { min: 0, max: 300000, rate: 0, label: "First ₦300,000 @ 0%" },
-        { min: 300000, max: 600000, rate: 0.07, label: "Next ₦300,000 @ 7%" },
-        { min: 600000, max: 1100000, rate: 0.11, label: "Next ₦500,000 @ 11%" },
-        { min: 1100000, max: 1600000, rate: 0.15, label: "Next ₦500,000 @ 15%" },
-        { min: 1600000, max: 3200000, rate: 0.19, label: "Next ₦1,600,000 @ 19%" },
-        { min: 3200000, max: 6400000, rate: 0.21, label: "Next ₦3,200,000 @ 21%" },
-        { min: 6400000, max: Infinity, rate: 0.24, label: "Above ₦6,400,000 @ 24%" },
+        { min: 0, max: 800000, rate: 0, label: "First ₦800,000 @ 0%" },
+        { min: 800001, max: 3000000, rate: 0.15, label: "Next ₦2,200,000 @ 15%" },
+        { min: 3000001, max: 12000000, rate: 0.18, label: "Next ₦9,000,000 @ 18%" },
+        { min: 12000001, max: 25000000, rate: 0.21, label: "Next ₦13,000,000 @ 21%" },
+        { min: 25000001, max: 50000000, rate: 0.23, label: "Next ₦25,000,000 @ 23%" },
+        { min: 50000001, max: Infinity, rate: 0.25, label: "Taxed @ 25%" },
       ];
 
       let remainingIncome = income;
@@ -112,9 +111,12 @@ const HomePage: React.FC = () => {
       bands.forEach((band) => {
         if (remainingIncome > previousMax) {
           const taxableInBand = Math.min(remainingIncome - previousMax, band.max - previousMax);
+          console.log('taxtinband', taxableInBand)
           if (taxableInBand > 0) {
             const taxForBand = taxableInBand * band.rate;
+            console.log('taxforband', taxForBand)
             incomeTax += taxForBand;
+            console.log('incometax', incomeTax)
             breakdown.push({
               label: `${band.label}: ${formatCurrency(taxableInBand)}`,
               amount: formatCurrency(taxForBand),
