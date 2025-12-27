@@ -34,6 +34,7 @@ const HomePage: React.FC = () => {
     "individual"
   );
   const [showResults, setShowResults] = useState(false);
+  const [cardAnimate, setCardAnimate] = useState(false);
 
   // Form State (updated defaults for better testing with current rates)
   const [formData, setFormData] = useState({
@@ -98,25 +99,48 @@ const HomePage: React.FC = () => {
       // Current PAYE bands (as of Dec 2025)
       const bands: TaxBand[] = [
         { min: 0, max: 800000, rate: 0, label: "First ₦800,000 @ 0%" },
-        { min: 800001, max: 3000000, rate: 0.15, label: "Next ₦2,200,000 @ 15%" },
-        { min: 3000001, max: 12000000, rate: 0.18, label: "Next ₦9,000,000 @ 18%" },
-        { min: 12000001, max: 25000000, rate: 0.21, label: "Next ₦13,000,000 @ 21%" },
-        { min: 25000001, max: 50000000, rate: 0.23, label: "Next ₦25,000,000 @ 23%" },
+        {
+          min: 800001,
+          max: 3000000,
+          rate: 0.15,
+          label: "Next ₦2,200,000 @ 15%",
+        },
+        {
+          min: 3000001,
+          max: 12000000,
+          rate: 0.18,
+          label: "Next ₦9,000,000 @ 18%",
+        },
+        {
+          min: 12000001,
+          max: 25000000,
+          rate: 0.21,
+          label: "Next ₦13,000,000 @ 21%",
+        },
+        {
+          min: 25000001,
+          max: 50000000,
+          rate: 0.23,
+          label: "Next ₦25,000,000 @ 23%",
+        },
         { min: 50000001, max: Infinity, rate: 0.25, label: "Taxed @ 25%" },
       ];
 
-      let remainingIncome = income;
+      const remainingIncome = income + capGains;
       let previousMax = 0;
 
       bands.forEach((band) => {
         if (remainingIncome > previousMax) {
-          const taxableInBand = Math.min(remainingIncome - previousMax, band.max - previousMax);
-          console.log('taxtinband', taxableInBand)
+          const taxableInBand = Math.min(
+            remainingIncome - previousMax,
+            band.max - previousMax
+          );
+          console.log("taxtinband", taxableInBand);
           if (taxableInBand > 0) {
             const taxForBand = taxableInBand * band.rate;
-            console.log('taxforband', taxForBand)
+            console.log("taxforband", taxForBand);
             incomeTax += taxForBand;
-            console.log('incometax', incomeTax)
+            console.log("incometax", incomeTax);
             breakdown.push({
               label: `${band.label}: ${formatCurrency(taxableInBand)}`,
               amount: formatCurrency(taxForBand),
@@ -127,19 +151,21 @@ const HomePage: React.FC = () => {
       });
 
       // Capital Gains Tax for individuals: 10% (current as of Dec 2025)
-      const capGainsTax = capGains * 0.1;
+      // const capGainsTax = capGains * 0.1;
 
       // Totals
       const totalIncome = income + capGains;
-      const totalTax = incomeTax + capGainsTax;
+      // const totalTax = incomeTax + capGainsTax;
+      const totalTax = incomeTax;
       const netIncome = totalIncome - totalTax;
-      const effectiveRate = totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0;
+      const effectiveRate =
+        totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0;
 
       setResultData({
         grossIncome: formatCurrency(totalIncome),
         taxBandBreakdown: breakdown,
         incomeTax: formatCurrency(incomeTax),
-        capitalGainsTax: formatCurrency(capGainsTax),
+        capitalGainsTax: formatCurrency(0),
         totalTax: formatCurrency(totalTax),
         effectiveRate: effectiveRate.toFixed(2) + "%",
         netIncome: formatCurrency(netIncome),
@@ -171,9 +197,9 @@ const HomePage: React.FC = () => {
       if (turnover <= 25000000) {
         citRate = 0; // Exempt
       } else if (turnover <= 100000000) {
-        citRate = 0.20; // Medium: 20%
+        citRate = 0.2; // Medium: 20%
       } else {
-        citRate = 0.30; // Large: 30%
+        citRate = 0.3; // Large: 30%
       }
 
       // Corporate Income Tax
@@ -187,11 +213,14 @@ const HomePage: React.FC = () => {
 
       const totalIncome = profits + capGains;
       const netIncome = totalIncome - totalTax;
-      const effectiveRate = totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0;
+      const effectiveRate =
+        totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0;
 
       const breakdown: BreakdownItem[] = [
         {
-          label: `Corporate Income Tax: ${formatCurrency(profits)} @ ${citRate * 100}%`,
+          label: `Corporate Income Tax: ${formatCurrency(profits)} @ ${
+            citRate * 100
+          }%`,
           amount: formatCurrency(cit),
         },
       ];
@@ -247,12 +276,13 @@ const HomePage: React.FC = () => {
               required from your earnings.
             </p>
             <p className="text-sm text-gray-600 mt-4">
-              Using current Nigerian tax rules (as of December 2025). Major reforms take effect January 2026.
+              Using current Nigerian tax rules (as of December 2025). Major
+              reforms take effect January 2026.
             </p>
           </div>
 
           <div>
-            <Button onClick={calculateTaxHandler}>Calculate tax</Button>
+            <Button>Calculate tax</Button>
           </div>
 
           <div className="mt-12">
@@ -268,7 +298,7 @@ const HomePage: React.FC = () => {
 
         {/* RIGHT SIDE: FORM CARD */}
         <div className="flex justify-center lg:justify-end">
-          <div className="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-gray-100 hover:shadow-3xl transition-shadow duration-300">
+          <div className="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-gray-100 hover:shadow-3xl transition-shadow duration-300 ">
             <h2 className="text-xl font-bold mb-6">Tax Calculator</h2>
 
             {/* Payer Type Toggle */}
@@ -293,7 +323,7 @@ const HomePage: React.FC = () => {
                   variant={payerType === "company" ? undefined : "outline"}
                   className={
                     payerType === "company"
-                      ? "bg-[#EBF3D6] border border-[#6A8D26] text-black hover:bg-[#EBF3D6] shadow-none"
+                      ? "bg-[#7CB518]/20 !text-black border border-[#6A8D26] text-black hover:bg-[#EBF3D6] shadow-none"
                       : ""
                   }
                   onClick={() => setPayerType("company")}
@@ -305,52 +335,54 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* Form Fields */}
-            {payerType === "individual" ? (
-              <>
-                <InputGroup
-                  label="Annual income (₦)"
-                  name="annualIncome"
-                  value={formData.annualIncome}
-                  onChange={handleInputChange}
-                />
-                <InputGroup
-                  label="Capital Gains (₦)"
-                  name="capitalGains"
-                  value={formData.capitalGains}
-                  onChange={handleInputChange}
-                  isOptional
-                />
-              </>
-            ) : (
-              <>
-                <InputGroup
-                  label="Annual Turnover (₦)"
-                  name="turnover"
-                  value={formData.turnover}
-                  onChange={handleInputChange}
-                />
-                <InputGroup
-                  label="Fixed Assets Value (₦)"
-                  name="fixedAssets"
-                  value={formData.fixedAssets}
-                  onChange={handleInputChange}
-                  isOptional
-                />
-                <InputGroup
-                  label="Annual Profit (₦)"
-                  name="profits"
-                  value={formData.profits}
-                  onChange={handleInputChange}
-                />
-                <InputGroup
-                  label="Capital Gains (₦)"
-                  name="capitalGains"
-                  value={formData.capitalGains}
-                  onChange={handleInputChange}
-                  isOptional
-                />
-              </>
-            )}
+            <div key={payerType}>
+              {payerType === "individual" ? (
+                <>
+                  <InputGroup
+                    label="Annual income (₦)"
+                    name="annualIncome"
+                    value={formData.annualIncome}
+                    onChange={handleInputChange}
+                  />
+                  <InputGroup
+                    label="Capital Gains (₦)"
+                    name="capitalGains"
+                    value={formData.capitalGains}
+                    onChange={handleInputChange}
+                    isOptional
+                  />
+                </>
+              ) : (
+                <>
+                  <InputGroup
+                    label="Annual Turnover (₦)"
+                    name="turnover"
+                    value={formData.turnover}
+                    onChange={handleInputChange}
+                  />
+                  <InputGroup
+                    label="Fixed Assets Value (₦)"
+                    name="fixedAssets"
+                    value={formData.fixedAssets}
+                    onChange={handleInputChange}
+                    isOptional
+                  />
+                  <InputGroup
+                    label="Annual Profit (₦)"
+                    name="profits"
+                    value={formData.profits}
+                    onChange={handleInputChange}
+                  />
+                  <InputGroup
+                    label="Capital Gains (₦)"
+                    name="capitalGains"
+                    value={formData.capitalGains}
+                    onChange={handleInputChange}
+                    isOptional
+                  />
+                </>
+              )}
+            </div>
 
             <Button fullWidth icon={Calculator} onClick={calculateTaxHandler}>
               Calculate tax
