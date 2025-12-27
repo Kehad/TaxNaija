@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
     "individual"
   );
   const [showResults, setShowResults] = useState(false);
-  const [cardAnimate, setCardAnimate] = useState(false);
+
 
   // Form State (updated defaults for better testing with current rates)
   const [formData, setFormData] = useState({
