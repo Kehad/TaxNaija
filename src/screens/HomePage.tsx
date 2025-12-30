@@ -3,6 +3,7 @@ import { Calculator, User, Building2, ShieldCheck } from "lucide-react";
 import { ResultsModal } from "../components/ResultModal";
 import { Button } from "../components/Button";
 import { InputGroup } from "../components/InputGroup";
+import CustomAlert from "../components/CustomAlert";
 import fulllogo from "../assets/full-logo.png";
 import bullet from "../assets/bullet.png";
 
@@ -36,7 +37,8 @@ const HomePage: React.FC = () => {
   );
   const [showResults, setShowResults] = useState(false);
   const [isExempt, setIsExempt] = useState<boolean>(false);
-
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   // Form State (updated defaults for better testing with current rates)
   const [formData, setFormData] = useState({
@@ -102,11 +104,13 @@ const HomePage: React.FC = () => {
       const capGains = parseCurrency(formData.chargeableGains);
 
       if (isNaN(income) || income < 0 || income === 0) {
-        alert("Please enter a valid annual income.");
+        setAlertMessage("Please enter a valid annual income.");
+        setAlertOpen(true);
         return;
       }
       if (isNaN(capGains) || capGains < 0 || income === 0) {
-        alert("Please enter a valid chargeable gains amount.");
+        setAlertMessage("Please enter a valid chargeable gains amount.");
+        setAlertOpen(true);
         return;
       }
 
@@ -197,21 +201,23 @@ const HomePage: React.FC = () => {
       const capGains = parseCurrency(formData.chargeableGains);
 
       if (isNaN(turnover) || turnover < 0 || turnover === 0) {
-        alert("Please enter a valid annual turnover.");
-        console.log("dont open");
+        setAlertMessage("Please enter a valid annual turnover.");
+        setAlertOpen(true);
         return;
       }
       if (isNaN(profits) || profits < 0 || profits === 0) {
-        console.log(profits);
-        alert("Please enter a valid annual profit.");
+        setAlertMessage("Please enter a valid annual profit.");
+        setAlertOpen(true);
         return;
       }
       if (isNaN(capGains) || capGains < 0) {
-        alert("Please enter a valid chargeable gains amount.");
+        setAlertMessage("Please enter a valid chargeable gains amount.");
+        setAlertOpen(true);
         return;
       }
       if (isNaN(fixedAssets) || fixedAssets < 0 || fixedAssets === 0) {
-        alert("Please enter a valid chargeable gains amount.");
+        setAlertMessage("Please enter a valid chargeable gains amount.");
+        setAlertOpen(true);
         return;
       }
       console.log("turnover", turnover);
@@ -433,6 +439,11 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </main>
+      <CustomAlert
+        isOpen={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        message={alertMessage}
+      />
     </div>
   );
 };
