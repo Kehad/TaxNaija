@@ -23,7 +23,7 @@ interface ResultData {
   grossIncome: string;
   taxBandBreakdown: BreakdownItem[];
   incomeTax: string;
-  capitalGainsTax: string;
+  chargeableGainsTax?: string;
   totalTax: string;
   effectiveRate: string;
   netIncome: string;
@@ -37,10 +37,17 @@ const HomePage: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [isExempt, setIsExempt] = useState<boolean>(false);
 
+  const dummyData = {
+    chargeableGains: 4000000,
+    turnover: 65000000,
+    fixedAssets: 240000000,
+    profits: 100000000,
+  };
+
   // Form State (updated defaults for better testing with current rates)
   const [formData, setFormData] = useState({
     annualIncome: "",
-    capitalGains: "",
+    chargeableGains: "",
     turnover: "",
     fixedAssets: "",
     profits: "",
@@ -51,8 +58,8 @@ const HomePage: React.FC = () => {
     grossIncome: "₦0.00",
     taxBandBreakdown: [],
     incomeTax: "₦0.00",
-    capitalGainsTax: "₦0.00",
     totalTax: "₦0.00",
+    chargeableGainsTax: "₦0.00",
     effectiveRate: "0.00%",
     netIncome: "₦0.00",
     isExempt: false,
@@ -63,35 +70,49 @@ const HomePage: React.FC = () => {
     return parseFloat(value.replace(/,/g, "")) || 0;
   };
 
+  // Helper to format input with commas as thousands separators
+  const formatInputWithCommas = (val: string) => {
+    if (!val) return "";
+    // Remove all chars except digits and dot
+    const cleaned = val.replace(/[^0-9.]/g, "");
+    // If empty after cleaning
+    if (cleaned === "") return "";
+    // Split integer and decimal parts
+    const parts = cleaned.split(".");
+    const intPart = parts[0].replace(/^0+(?=\d)/, "");
+    const withCommas = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const decPart = parts[1] ? "." + parts[1].slice(0, 2) : "";
+    return withCommas + decPart;
+  };
+
   // Helper to format number to currency
   const formatCurrency = (value: number) => {
-    return (
-      "₦" +
-      value.toLocaleString("en-NG", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    );
+    const formatted = value.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    return `₦${formatted}`;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow only numbers, commas, and dots
-    const value = e.target.value.replace(/[^0-9,.]/g, "");
-    setFormData({ ...formData, [e.target.name]: value });
+    const raw = e.target.value;
+    const formatted = formatInputWithCommas(raw);
+    setFormData({ ...formData, [e.target.name]: formatted });
   };
 
   // --- MAIN CALCULATION LOGIC (Updated for Dec 2025: Pre-2026 rules) ---
   const calculateTaxHandler = () => {
     if (payerType === "individual") {
       const income = parseCurrency(formData.annualIncome);
-      const capGains = parseCurrency(formData.capitalGains);
+      const capGains = parseCurrency(formData.chargeableGains);
 
       if (isNaN(income) || income < 0 || income === 0) {
         alert("Please enter a valid annual income.");
         return;
       }
       if (isNaN(capGains) || capGains < 0 || income === 0) {
-        alert("Please enter a valid capital gains amount.");
+        alert("Please enter a valid chargeable gains amount.");
         return;
       }
 
@@ -152,7 +173,7 @@ const HomePage: React.FC = () => {
         previousMax = band.max;
       });
 
-      // Capital Gains Tax for individuals: 10% (current as of Dec 2025)
+      // Chargeable Gains Tax for individuals: 10% (current as of Dec 2025)
       // const capGainsTax = capGains * 0.1;
 
       // Totals
@@ -167,7 +188,7 @@ const HomePage: React.FC = () => {
         grossIncome: formatCurrency(totalIncome),
         taxBandBreakdown: breakdown,
         incomeTax: formatCurrency(incomeTax),
-        capitalGainsTax: formatCurrency(0),
+        chargeableGainsTax: formatCurrency(0),
         totalTax: formatCurrency(totalTax),
         effectiveRate: effectiveRate.toFixed(2) + "%",
         netIncome: formatCurrency(netIncome),
@@ -177,9 +198,9 @@ const HomePage: React.FC = () => {
     } else {
       // Company Tax Calculation (current as of Dec 2025)
       const turnover = parseCurrency(formData.turnover);
-      // const fixedAssets = parseCurrency(formData.fixedAssets); // Not directly used but kept for form
+      const fixedAssets = parseCurrency(formData.fixedAssets); // Not directly used but kept for form
       const profits = parseCurrency(formData.profits);
-      const capGains = parseCurrency(formData.capitalGains);
+      const capGains = parseCurrency(formData.chargeableGains);
 
       if (isNaN(turnover) || turnover < 0 || turnover === 0) {
         alert("Please enter a valid annual turnover.");
@@ -192,93 +213,77 @@ const HomePage: React.FC = () => {
         return;
       }
       if (isNaN(capGains) || capGains < 0) {
-        alert("Please enter a valid capital gains amount.");
+        alert("Please enter a valid chargeable gains amount.");
+        return;
+      }
+      if (isNaN(fixedAssets) || fixedAssets < 0 || fixedAssets === 0) {
+        alert("Please enter a valid chargeable gains amount.");
         return;
       }
       console.log("turnover", turnover);
 
-      // let calculatedResult: TaxBreakdown = {
-      //         cit: 0,
-      //         educationTax: 0,
-      //         cgt: 0,
-      //         totalTax: 0,
-      //         isExempt: false
-      //       };
-
-      //         if (turnover <= SMALL_COMPANY_THRESHOLD) {
-      //           calculatedResult.isExempt = true;
-      //           // Tax is 0 for CIT, Dev Levy, and CGT
-      //         } else {
-      //           // 2. Large Company Logic
-
-      //           // CIT: 30% of Profits
-      //           calculatedResult.cit = profits * 0.30;
-
-      //           // Development Levy: 4% of Profits (Replaces Education Tax)
-      //           calculatedResult.educationTax = profits * 0.04;
-
-      //           // CGT: 30% of Capital Gains (Increased from 10%)
-      //           calculatedResult.cgt = capitalGains * 0.30;
-
-      //           calculatedResult.totalTax =
-      //             calculatedResult.cit +
-      //             calculatedResult.educationTax +
-      //             calculatedResult.cgt;
-      //         }
+      const TURNOVER_THRESHOLD = 5000000;
+      const FIXED_ASSETS_THRESHOLD = 250000000;
 
       // Determine CIT rate based on turnover (2025 rules)
       let citRate = 0;
-      if (turnover <= 25000000) {
+
+      // CHANGE HERE: Use && (AND).
+      // The IF block (Exemption) only runs if turnover IS low AND assets ARE low.
+      if (
+        turnover <= TURNOVER_THRESHOLD &&
+        fixedAssets <= FIXED_ASSETS_THRESHOLD
+      ) {
         citRate = 0; // Exempt
         setIsExempt(true);
-       
-        // return;
-      }
-      //  else if (turnover <= 100000000) {
-      //   citRate = 0.2; // Medium: 20%
-      // }
-      else {
-        setIsExempt(false)
+      } else {
+        // This ELSE block runs if Turnover is High OR Assets are High
+        setIsExempt(false);
         citRate = 0.3; // Large: 30%
-        // Corporate Income Tax
-        const cit = profits * citRate;
-        // Capital Gains Tax for companies: 10% (current)
-        const capGainsTax = capGains * 0.1;
-        // Tertiary Education Tax: 2.5% on assessable profit
-        const tet = profits * 0.025;
-        // Total Tax (including TET 2.5%)
-        const totalTax = cit + tet;
-        // const totalTax = cit + capGainsTax + tet;
+
+        // --- Total Income ---
         const totalIncome = profits + capGains;
+
+        // 1. Don't double tax Chargeable Gains. Calculate CIT on profits only.
+        const cit = totalIncome * citRate;
+
+        // 2. Chargeable Gains Tax is separate (usually 10%)
+        const capGainsTax = capGains * 0.1;
+
+        // 3. Tertiary Education Tax (2.5% or 3% depending on year)
+        const tet = totalIncome * 0.04;
+
+        // const totalTax = cit + capGainsTax + tet;
+        const totalTax = cit + tet;
         const netIncome = totalIncome - totalTax;
+
         const effectiveRate =
           totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0;
 
         const breakdown: BreakdownItem[] = [
           {
-            label: `Corporate Income Tax: ${formatCurrency(profits)} @ ${
+            label: `Company Income Tax: ${formatCurrency(profits)} @ ${
               citRate * 100
             }%`,
             amount: formatCurrency(cit),
           },
         ];
-        if (capGains > 0) {
-          breakdown.push({
-            label: `Capital Gains Tax: ${formatCurrency(capGains)} @ 10%`,
-            amount: formatCurrency(capGainsTax),
-          });
-        }
+        // if (capGains > 0) {
+        //   breakdown.push({
+        //     label: `Chargeable Gains Tax: ${formatCurrency(capGains)} @ 10%`,
+        //     amount: formatCurrency(capGainsTax),
+        //   });
+        // }
         breakdown.push({
-          label: `Tertiary Education Tax: ${formatCurrency(profits)} @ 2.5%`,
+          label: `Development Levy: ${formatCurrency(profits)} @ 4%`,
           amount: formatCurrency(tet),
         });
 
-        console.log(isExempt);
         setResultData({
-          grossIncome: formatCurrency(turnover),
+          grossIncome: formatCurrency(totalIncome),
+          chargeableGainsTax: formatCurrency(capGainsTax),
           taxBandBreakdown: breakdown,
           incomeTax: formatCurrency(cit),
-          capitalGainsTax: formatCurrency(capGainsTax),
           totalTax: formatCurrency(totalTax),
           effectiveRate: effectiveRate.toFixed(2) + "%",
           netIncome: formatCurrency(netIncome),
@@ -388,9 +393,9 @@ const HomePage: React.FC = () => {
                     onChange={handleInputChange}
                   />
                   <InputGroup
-                    label="Capital Gains (₦)"
-                    name="capitalGains"
-                    value={formData.capitalGains}
+                    label="Chargeable Gains (₦)"
+                    name="chargeableGains"
+                    value={formData.chargeableGains}
                     onChange={handleInputChange}
                     isOptional
                   />
@@ -398,9 +403,15 @@ const HomePage: React.FC = () => {
               ) : (
                 <>
                   <InputGroup
-                    label="Annual Turnover (₦)"
+                    label="Gross Turnover (₦)"
                     name="turnover"
                     value={formData.turnover}
+                    onChange={handleInputChange}
+                  />
+                  <InputGroup
+                    label="Fixed Assets Value (₦)"
+                    name="fixedAssets"
+                    value={formData.fixedAssets}
                     onChange={handleInputChange}
                   />
                   <InputGroup
@@ -410,16 +421,9 @@ const HomePage: React.FC = () => {
                     onChange={handleInputChange}
                   />
                   <InputGroup
-                    label="Fixed Assets Value (₦)"
-                    name="fixedAssets"
-                    value={formData.fixedAssets}
-                    onChange={handleInputChange}
-                    isOptional
-                  />
-                  <InputGroup
-                    label="Capital Gains (₦)"
-                    name="capitalGains"
-                    value={formData.capitalGains}
+                    label="Chargeable Gains (₦)"
+                    name="chargeableGains"
+                    value={formData.chargeableGains}
                     onChange={handleInputChange}
                     isOptional
                   />
@@ -431,9 +435,7 @@ const HomePage: React.FC = () => {
               Calculate tax
             </Button>
 
-            {isExempt && (
-              <NoTaxDeducted />
-            )}
+            {isExempt && <NoTaxDeducted />}
           </div>
         </div>
       </main>
@@ -458,10 +460,10 @@ const NoTaxDeducted = () => (
       <ShieldCheck size={24} />
     </div>
     <div className="text-left">
-      <p className="font-bold text-green-900">Exempt from Companies Income Tax</p>
-      <p className="text-sm text-green-700">
-        Small Company (Turnover ≤ ₦25m)
+      <p className="font-bold text-green-900">
+        Exempt from Companies Income Tax
       </p>
+      <p className="text-sm text-green-700">Small Company (Turnover ≤ ₦25m)</p>
     </div>
   </div>
 );
@@ -489,7 +491,7 @@ const NoTaxDeducted = () => (
 
 //   const [formData, setFormData] = useState({
 //     annualIncome: "",
-//     capitalGains: "",
+//     chargeableGains: "",
 //     turnover: "",
 //     fixedAssets: "",
 //     profits: "",
@@ -512,7 +514,7 @@ const NoTaxDeducted = () => (
 //       const income = parseFloat(formData.annualIncome) || 0;
 //       const turnover = parseFloat(formData.turnover) || 0;
 //       const profits = parseFloat(formData.profits) || 0;
-//       const capitalGains = parseFloat(formData.capitalGains) || 0;
+//       const chargeableGains = parseFloat(formData.chargeableGains) || 0;
 
 //       let calculatedResult: TaxBreakdown = {
 //         cit: 0,
@@ -540,8 +542,8 @@ const NoTaxDeducted = () => (
 //           // Development Levy: 4% of Profits (Replaces Education Tax)
 //           calculatedResult.educationTax = profits * 0.04;
 
-//           // CGT: 30% of Capital Gains (Increased from 10%)
-//           calculatedResult.cgt = capitalGains * 0.30;
+//           // CGT: 30% of Chargeable Gains (Increased from 10%)
+//           calculatedResult.cgt = chargeableGains * 0.30;
 
 //           calculatedResult.totalTax =
 //             calculatedResult.cit +
@@ -642,9 +644,9 @@ const NoTaxDeducted = () => (
 //                   required
 //                 />
 //                 <InputGroup
-//                   label="Capital Gains (₦)"
-//                   name="capitalGains"
-//                   value={formData.capitalGains}
+//                   label="Chargeable Gains (₦)"
+//                   name="chargeableGains"
+//                   value={formData.chargeableGains}
 //                   onChange={handleInputChange}
 //                   isOptional
 //                 />
@@ -667,9 +669,9 @@ const NoTaxDeducted = () => (
 //                   required
 //                 />
 //                  <InputGroup
-//                   label="Capital Gains (₦)"
-//                   name="capitalGains"
-//                   value={formData.capitalGains}
+//                   label="Chargeable Gains (₦)"
+//                   name="chargeableGains"
+//                   value={formData.chargeableGains}
 //                   onChange={handleInputChange}
 //                   isOptional
 //                 />
