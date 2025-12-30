@@ -37,12 +37,6 @@ const HomePage: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [isExempt, setIsExempt] = useState<boolean>(false);
 
-  const dummyData = {
-    chargeableGains: 4000000,
-    turnover: 65000000,
-    fixedAssets: 240000000,
-    profits: 100000000,
-  };
 
   // Form State (updated defaults for better testing with current rates)
   const [formData, setFormData] = useState({
