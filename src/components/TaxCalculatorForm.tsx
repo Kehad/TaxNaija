@@ -21,7 +21,7 @@ interface TaxCalculatorFormProps {
 }
 
 const NoTaxDeducted = () => (
-  <div className="flex items-center gap-4 rounded-xl mt-10 border border-green-200 bg-green-50 p-4 shadow-sm">
+  <div className="flex flex-col md:flex-row md:items-center gap-4 rounded-xl mt-10 border border-green-200 bg-green-50 p-4 shadow-sm">
     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
       <ShieldCheck size={24} />
     </div>

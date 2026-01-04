@@ -282,7 +282,7 @@ export const useTaxCalculator = () => {
     ) {
       citRate = 0; // Exempt
       setIsExempt(true);
-      return true; // Early return for exempt companies
+      return null; // Early return for exempt companies
     } else {
       setIsExempt(false);
       citRate = 0.3; // Large: 30%
@@ -336,7 +336,7 @@ export const useTaxCalculator = () => {
   };
 
   const calculateTaxHandler = (payerType: "individual" | "company") => {
-    let success = false;
+    let success: boolean | null = false;
     if (payerType === "individual") {
       success = calculateIndividualTax();
     } else {
