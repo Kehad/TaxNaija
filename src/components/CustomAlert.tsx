@@ -24,10 +24,10 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
       />
 
       {/* Modal Container with Enhanced Styling */}
-      <div className="relative z-10 w-full max-w-[420px] transform rounded-xl bg-gradient-to-br from-[#2B2D31] to-[#1E1F23] p-6 text-left shadow-2xl transition-all duration-300 border border-gray-700/60 animate-in zoom-in-95 duration-300">
+      <div className="relative z-10 w-full max-w-105 transform rounded-xl bg-linear-to-br from-[#2B2D31] to-[#1E1F23] p-6 text-left shadow-2xl transition-all border border-gray-700/60 animate-in zoom-in-95 duration-300">
         {/* Header with Alert Icon */}
         <div className="flex items-center gap-3 mb-5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#00D1C1] to-[#00A896] shadow-lg">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#00D1C1] to-[#00A896] shadow-lg">
             <AlertIcon className="h-5 w-5 text-white" />
           </div>
           <span className="text-base font-semibold text-white font-mono tracking-wide">
@@ -44,7 +44,13 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="rounded-lg bg-gradient-to-r from-[#00D1C1] to-[#00A896] px-8 py-2.5 text-sm font-semibold text-black hover:from-[#00BFA5] hover:to-[#009B86] focus:outline-none focus:ring-2 focus:ring-[#00D1C1] focus:ring-offset-2 focus:ring-offset-[#2B2D31] transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+            onKeyUpCapture={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                console.log('Enter or Space key pressed');
+                onClose();
+              }
+            }}
+            className="rounded-lg bg-linear-to-r from-[#00D1C1] to-[#00A896] px-8 py-2.5 text-sm font-semibold text-black hover:from-[#00BFA5] hover:to-[#009B86] focus:outline-none focus:ring-2 focus:ring-[#00D1C1] focus:ring-offset-2 focus:ring-offset-[#2B2D31] transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
           >
             OK
           </button>
